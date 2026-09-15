@@ -1,0 +1,594 @@
+--// KILLER OF DETH - Fruit Location Finder
+--// Clean Fruit Finder UI
+--// No webhook / external tracking
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local TweenService = game:GetService("TweenService")
+local CollectionService = game:GetService("CollectionService")
+
+local player = Players.LocalPlayer
+local PlayerGui = player:WaitForChild("PlayerGui")
+
+local character = player.Character or player.CharacterAdded:Wait()
+local root = character:WaitForChild("HumanoidRootPart")
+
+player.CharacterAdded:Connect(function(char)
+    character = char
+    root = char:WaitForChild("HumanoidRootPart")
+end)
+
+--==================================================
+-- SETTINGS
+--==================================================
+
+local Settings = {
+    ESP = false,
+    AutoStore = false,
+
+    -- Estimated only
+    FruitSpawnInterval = 60 * 60, -- 60 minutes
+}
+
+local nextFruitTime = os.clock() + Settings.FruitSpawnInterval
+
+--==================================================
+-- FRUIT LIST
+--==================================================
+
+local Fruits = {
+    ["Fruit "] = true,
+    ["Rocket Fruit"] = true,
+    ["Spin Fruit"] = true,
+    ["Ghost Fruit"] = true,
+    ["Spring Fruit"] = true,
+    ["Bomb Fruit"] = true,
+    ["Spike Fruit"] = true,
+    ["Smoke Fruit"] = true,
+    ["Blade Fruit"] = true,
+    ["Sand Fruit"] = true,
+    ["Ice Fruit"] = true,
+    ["Dark Fruit"] = true,
+    ["Diamond Fruit"] = true,
+    ["Light Fruit"] = true,
+    ["Rubber Fruit"] = true,
+    ["Barrier Fruit"] = true,
+    ["Magma Fruit"] = true,
+    ["Phoenix Fruit"] = true,
+    ["Love Fruit"] = true,
+    ["Spider Fruit"] = true,
+    ["Sound Fruit"] = true,
+    ["Buddha Fruit"] = true,
+    ["Quake Fruit"] = true,
+    ["Gravity Fruit"] = true,
+    ["Control Fruit"] = true,
+    ["T-Rex Fruit"] = true,
+    ["Mammoth Fruit"] = true,
+    ["Spirit Fruit"] = true,
+    ["Venom Fruit"] = true,
+    ["Shadow Fruit"] = true,
+    ["Rumble Fruit"] = true,
+    ["Portal Fruit"] = true,
+    ["Blizzard Fruit"] = true,
+    ["Dragon Fruit"] = true,
+    ["Leopard Fruit"] = true,
+    ["Dough Fruit"] = true,
+    ["Dragon (West) Fruit"] = true,
+    ["Dragon (East) Fruit"] = true,
+    ["Kitsune Fruit"] = true,
+    ["Gas Fruit"] = true,
+    ["Flame Fruit"] = true,
+    ["Yeti Fruit"] = true,
+    ["Creation Fruit"] = true,
+    ["Eagle Fruit"] = true
+}
+
+local Rare = {
+    ["Kitsune Fruit"] = true,
+    ["Dragon (West) Fruit"] = true,
+    ["Dragon (East) Fruit"] = true,
+    ["Yeti Fruit"] = true,
+    ["Gas Fruit"] = true,
+    ["T-Rex Fruit"] = true,
+    ["Leopard Fruit"] = true,
+    ["Dough Fruit"] = true
+}
+
+--==================================================
+-- GUI
+--==================================================
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "KillerOfDeth"
+gui.ResetOnSpawn = false
+gui.Parent = PlayerGui
+
+local Main = Instance.new("Frame")
+Main.Name = "Main"
+Main.Size = UDim2.fromOffset(430, 330)
+Main.Position = UDim2.new(0.5, -215, 0.5, -165)
+Main.BackgroundColor3 = Color3.fromRGB(13, 13, 17)
+Main.BorderSizePixel = 0
+Main.Parent = gui
+
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, 14)
+Corner.Parent = Main
+
+local Stroke = Instance.new("UIStroke")
+Stroke.Color = Color3.fromRGB(180, 25, 35)
+Stroke.Thickness = 2
+Stroke.Transparency = 0.15
+Stroke.Parent = Main
+
+--==================================================
+-- HEADER
+--==================================================
+
+local Header = Instance.new("Frame")
+Header.Size = UDim2.new(1, 0, 0, 58)
+Header.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+Header.BorderSizePixel = 0
+Header.Parent = Main
+
+local HeaderCorner = Instance.new("UICorner")
+HeaderCorner.CornerRadius = UDim.new(0, 14)
+HeaderCorner.Parent = Header
+
+local Title = Instance.new("TextLabel")
+Title.BackgroundTransparency = 1
+Title.Position = UDim2.fromOffset(18, 7)
+Title.Size = UDim2.new(1, -70, 0, 28)
+Title.Font = Enum.Font.GothamBlack
+Title.Text = "☠  KILLER OF DETH"
+Title.TextColor3 = Color3.fromRGB(255, 70, 80)
+Title.TextSize = 20
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = Header
+
+local Subtitle = Instance.new("TextLabel")
+Subtitle.BackgroundTransparency = 1
+Subtitle.Position = UDim2.fromOffset(20, 34)
+Subtitle.Size = UDim2.new(1, -80, 0, 17)
+Subtitle.Font = Enum.Font.Gotham
+Subtitle.Text = "FRUIT LOCATION FINDER"
+Subtitle.TextColor3 = Color3.fromRGB(145, 145, 155)
+Subtitle.TextSize = 10
+Subtitle.TextXAlignment = Enum.TextXAlignment.Left
+Subtitle.Parent = Header
+
+--==================================================
+-- MINIMIZE
+--==================================================
+
+local Minimize = Instance.new("TextButton")
+Minimize.Size = UDim2.fromOffset(35, 35)
+Minimize.Position = UDim2.new(1, -45, 0, 11)
+Minimize.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+Minimize.Text = "—"
+Minimize.TextColor3 = Color3.new(1, 1, 1)
+Minimize.Font = Enum.Font.GothamBold
+Minimize.TextSize = 18
+Minimize.Parent = Header
+
+local MinCorner = Instance.new("UICorner")
+MinCorner.CornerRadius = UDim.new(0, 8)
+MinCorner.Parent = Minimize
+
+--==================================================
+-- STATUS PANEL
+--==================================================
+
+local Status = Instance.new("Frame")
+Status.Size = UDim2.new(1, -30, 0, 105)
+Status.Position = UDim2.fromOffset(15, 70)
+Status.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
+Status.BorderSizePixel = 0
+Status.Parent = Main
+
+local StatusCorner = Instance.new("UICorner")
+StatusCorner.CornerRadius = UDim.new(0, 11)
+StatusCorner.Parent = Status
+
+local Nearest = Instance.new("TextLabel")
+Nearest.BackgroundTransparency = 1
+Nearest.Position = UDim2.fromOffset(15, 10)
+Nearest.Size = UDim2.new(1, -30, 0, 25)
+Nearest.Font = Enum.Font.GothamBold
+Nearest.Text = "🍎  Nearest: Searching..."
+Nearest.TextColor3 = Color3.fromRGB(240, 240, 245)
+Nearest.TextSize = 14
+Nearest.TextXAlignment = Enum.TextXAlignment.Left
+Nearest.Parent = Status
+
+local Count = Instance.new("TextLabel")
+Count.BackgroundTransparency = 1
+Count.Position = UDim2.fromOffset(15, 39)
+Count.Size = UDim2.new(1, -30, 0, 22)
+Count.Font = Enum.Font.Gotham
+Count.Text = "Fruits in Server: 0"
+Count.TextColor3 = Color3.fromRGB(160, 160, 170)
+Count.TextSize = 12
+Count.TextXAlignment = Enum.TextXAlignment.Left
+Count.Parent = Status
+
+local Timer = Instance.new("TextLabel")
+Timer.BackgroundTransparency = 1
+Timer.Position = UDim2.fromOffset(15, 67)
+Timer.Size = UDim2.new(1, -30, 0, 25)
+Timer.Font = Enum.Font.GothamBold
+Timer.Text = "⏱  Estimated Next Fruit: 60:00"
+Timer.TextColor3 = Color3.fromRGB(255, 190, 80)
+Timer.TextSize = 13
+Timer.TextXAlignment = Enum.TextXAlignment.Left
+Timer.Parent = Status
+
+--==================================================
+-- BUTTON CREATOR
+--==================================================
+
+local function makeButton(text, position)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.fromOffset(125, 42)
+    button.Position = position
+    button.BackgroundColor3 = Color3.fromRGB(28, 28, 35)
+    button.BorderSizePixel = 0
+    button.Text = text
+    button.TextColor3 = Color3.fromRGB(235, 235, 240)
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 12
+    button.AutoButtonColor = false
+    button.Parent = Main
+
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 9)
+    c.Parent = button
+
+    local s = Instance.new("UIStroke")
+    s.Color = Color3.fromRGB(55, 55, 65)
+    s.Thickness = 1
+    s.Parent = button
+
+    button.MouseEnter:Connect(function()
+        TweenService:Create(
+            button,
+            TweenInfo.new(0.15),
+            {BackgroundColor3 = Color3.fromRGB(45, 45, 55)}
+        ):Play()
+    end)
+
+    button.MouseLeave:Connect(function()
+        TweenService:Create(
+            button,
+            TweenInfo.new(0.15),
+            {BackgroundColor3 = Color3.fromRGB(28, 28, 35)}
+        ):Play()
+    end)
+
+    return button
+end
+
+local TPButton = makeButton("📍  TELEPORT", UDim2.fromOffset(15, 190))
+local ESPButton = makeButton("👁  ESP: OFF", UDim2.fromOffset(153, 190))
+local StoreButton = makeButton("📦  STORE: OFF", UDim2.fromOffset(291, 190))
+
+local ScanButton = makeButton("🔎  SCAN FRUITS", UDim2.fromOffset(15, 242))
+local ResetTimerButton = makeButton("🔄  RESET TIMER", UDim2.fromOffset(153, 242))
+
+local ServerLabel = Instance.new("TextLabel")
+ServerLabel.BackgroundTransparency = 1
+ServerLabel.Position = UDim2.fromOffset(291, 242)
+ServerLabel.Size = UDim2.fromOffset(125, 42)
+ServerLabel.Font = Enum.Font.Gotham
+ServerLabel.Text = "SERVER\nONLINE"
+ServerLabel.TextColor3 = Color3.fromRGB(90, 255, 140)
+ServerLabel.TextSize = 11
+ServerLabel.Parent = Main
+
+--==================================================
+-- DRAG SYSTEM
+--==================================================
+
+local dragging = false
+local dragStart
+local startPos
+
+Header.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = Main.Position
+    end
+end)
+
+Header.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+
+        Main.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+--==================================================
+-- FRUIT FUNCTIONS
+--==================================================
+
+local function isFruit(obj)
+    return Fruits[obj.Name] and obj:FindFirstChild("Handle")
+end
+
+local function getFruits()
+    local list = {}
+
+    for _, obj in ipairs(Workspace:GetChildren()) do
+        if isFruit(obj) then
+            table.insert(list, obj)
+        end
+    end
+
+    return list
+end
+
+local function getNearestFruit()
+    if not root then
+        return nil, math.huge, 0
+    end
+
+    local nearest = nil
+    local distance = math.huge
+    local list = getFruits()
+
+    for _, fruit in ipairs(list) do
+        local d = (root.Position - fruit.Handle.Position).Magnitude
+
+        if d < distance then
+            distance = d
+            nearest = fruit
+        end
+    end
+
+    return nearest, distance, #list
+end
+
+--==================================================
+-- ESP
+--==================================================
+
+local ESPObjects = {}
+
+local function removeESP()
+    for _, guiObject in pairs(ESPObjects) do
+        if guiObject and guiObject.Parent then
+            guiObject:Destroy()
+        end
+    end
+
+    table.clear(ESPObjects)
+end
+
+local function addESP(fruit)
+    if not isFruit(fruit) then
+        return
+    end
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "KOD_FruitESP"
+    billboard.Size = UDim2.fromOffset(170, 42)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.AlwaysOnTop = true
+    billboard.Adornee = fruit.Handle
+    billboard.Parent = fruit
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.fromScale(1, 1)
+    label.BackgroundTransparency = 0.2
+    label.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
+    label.Font = Enum.Font.GothamBold
+    label.TextScaled = true
+    label.Text = Rare[fruit.Name]
+        and "★ " .. fruit.Name
+        or fruit.Name
+
+    label.TextColor3 = Rare[fruit.Name]
+        and Color3.fromRGB(255, 190, 70)
+        or Color3.fromRGB(255, 255, 255)
+
+    label.Parent = billboard
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 7)
+    corner.Parent = label
+
+    table.insert(ESPObjects, billboard)
+end
+
+local function updateESP()
+    removeESP()
+
+    if not Settings.ESP then
+        return
+    end
+
+    for _, fruit in ipairs(getFruits()) do
+        addESP(fruit)
+    end
+end
+
+--==================================================
+-- BUTTONS
+--==================================================
+
+TPButton.MouseButton1Click:Connect(function()
+    local fruit, distance = getNearestFruit()
+
+    if fruit and root then
+        root.CFrame = CFrame.new(fruit.Handle.Position + Vector3.new(0, 4, 0))
+        TPButton.Text = "✓  TELEPORTED"
+
+        task.delay(1.2, function()
+            TPButton.Text = "📍  TELEPORT"
+        end)
+    else
+        TPButton.Text = "✕  NO FRUIT"
+
+        task.delay(1.2, function()
+            TPButton.Text = "📍  TELEPORT"
+        end)
+    end
+end)
+
+ESPButton.MouseButton1Click:Connect(function()
+    Settings.ESP = not Settings.ESP
+
+    ESPButton.Text = Settings.ESP
+        and "👁  ESP: ON"
+        or "👁  ESP: OFF"
+
+    updateESP()
+end)
+
+StoreButton.MouseButton1Click:Connect(function()
+    Settings.AutoStore = not Settings.AutoStore
+
+    StoreButton.Text = Settings.AutoStore
+        and "📦  STORE: ON"
+        or "📦  STORE: OFF"
+end)
+
+ScanButton.MouseButton1Click:Connect(function()
+    local fruit, distance, count = getNearestFruit()
+
+    if fruit then
+        local name = fruit.Name == "Fruit "
+            and "Spawned Fruit"
+            or fruit.Name
+
+        Nearest.Text = "🍎  Nearest: " .. name
+        Count.Text = "Fruits in Server: " .. count
+    else
+        Nearest.Text = "🍎  Nearest: None"
+        Count.Text = "Fruits in Server: 0"
+    end
+
+    updateESP()
+end)
+
+ResetTimerButton.MouseButton1Click:Connect(function()
+    nextFruitTime = os.clock() + Settings.FruitSpawnInterval
+end)
+
+--==================================================
+-- MINIMIZE
+--==================================================
+
+local minimized = false
+
+Minimize.MouseButton1Click:Connect(function()
+    minimized = not minimized
+
+    for _, child in ipairs(Main:GetChildren()) do
+        if child ~= Header and child:IsA("GuiObject") then
+            child.Visible = not minimized
+        end
+    end
+
+    Main.Size = minimized
+        and UDim2.fromOffset(430, 58)
+        or UDim2.fromOffset(430, 330)
+
+    Minimize.Text = minimized and "+" or "—"
+end)
+
+--==================================================
+-- LIVE UPDATE
+--==================================================
+
+task.spawn(function()
+    while task.wait(0.25) do
+
+        if not minimized then
+
+            local fruit, distance, count = getNearestFruit()
+
+            if fruit then
+                local name = fruit.Name == "Fruit "
+                    and "Spawned Fruit"
+                    or fruit.Name
+
+                if Rare[fruit.Name] then
+                    Nearest.Text = "★  RARE: " .. name
+                    Nearest.TextColor3 = Color3.fromRGB(255, 190, 70)
+                else
+                    Nearest.Text = "🍎  Nearest: " .. name
+                    Nearest.TextColor3 = Color3.fromRGB(240, 240, 245)
+                end
+            else
+                Nearest.Text = "🍎  Nearest: None"
+            end
+
+            Count.Text = "Fruits in Server: " .. count
+
+            local remaining = math.max(0, nextFruitTime - os.clock())
+
+            local minutes = math.floor(remaining / 60)
+            local seconds = math.floor(remaining % 60)
+
+            Timer.Text = string.format(
+                "⏱  Estimated Next Fruit: %02d:%02d",
+                minutes,
+                seconds
+            )
+
+            if remaining <= 0 then
+                Timer.Text = "⏱  Estimated Next Fruit: NOW / CHECK SERVER"
+            end
+        end
+    end
+end)
+
+--==================================================
+-- NEW FRUIT DETECTION
+--==================================================
+
+Workspace.ChildAdded:Connect(function(obj)
+
+    if isFruit(obj) then
+
+        -- Restart estimated timer when a fruit appears
+        nextFruitTime = os.clock() + Settings.FruitSpawnInterval
+
+        local name = obj.Name == "Fruit "
+            and "Spawned Fruit"
+            or obj.Name
+
+        if Rare[obj.Name] then
+            Nearest.Text = "★ RARE FRUIT FOUND: " .. name
+            Nearest.TextColor3 = Color3.fromRGB(255, 190, 70)
+        else
+            Nearest.Text = "🍎 FRUIT FOUND: " .. name
+        end
+
+        if Settings.ESP then
+            task.wait(0.1)
+            updateESP()
+        end
+    end
+end)
+
+-- Initial ESP
+task.wait(1)
+updateESP()
+
+print("☠ KILLER OF DETH - Fruit Location Finder Loaded")
